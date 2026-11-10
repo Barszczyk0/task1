@@ -1,11 +1,10 @@
-# Raport podatności: Stored XSS w widokach `/books/`, `/customers/`, `/loans/`
+# Raport podatności Stored XSS
 
 | | |
 |---|---|
 | **Aplikacja** | Flask Book Library |
-| **Typ podatności** | Stored Cross-Site Scripting (CWE-79) |
+| **Typ podatności** | Stored Cross-Site Scripting |
 | **Dotknięte widoki** | `GET /books/`, `GET /customers/`, `GET /loans/` |
-| **Ocena** | CVSS 3.1: 6.1 (Średnia) – `AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N` |
 | **Status** | Poprawione (walidacja danych w backendzie) |
 
 ## Opis
@@ -53,7 +52,7 @@ Date: Tue, 10 Nov 2026 17:18:43 GMT
 
 
 ![XSS w /books/](img/xss_books1.png)
-![XSS w /books/](img/xss_books2.png)
+![XSS w /books/](img/xss_books2.png.png)
 
 **Endpoint 2 – `/customers/`**
 
@@ -65,6 +64,7 @@ Host: 127.0.0.1:5000
 [...]
 
 name=TestCustomer%3Cscript%3Ealert('XSS')%3C%2Fscript%3E&city=TestCity%3Cscript%3Ealert('XSS')%3C%2Fscript%3E&age=67
+
 
 Response:
 
@@ -139,8 +139,6 @@ POST /books/create {"name": "<script>alert(\"XSS\")</script>", ...}
 
 Ponieważ walidacja jest w modelu, a nie w konkretnym widoku, chroni każdą ścieżkę zapisu, również przyszłe endpointy.
 
-Dodatkowo w `project/__init__.py` adres bazy można nadpisać zmienną `DATABASE_URL`. Dzięki temu testy działają na bazie w pamięci i nie modyfikują `data.sqlite`.
-
 ## Testy
 
 Testy jednostkowe znajdują się w `tests/test_xss.py` (24 testy, `unittest`, z subtestami dla 7 różnych payloadów XSS). Sprawdzają trzy poziomy:
@@ -179,14 +177,10 @@ test_modify_existing_customer_with_xss_raises (tests.test_xss.CustomerModelTest)
 test_valid_customer_is_saved (tests.test_xss.CustomerModelTest) ... ok
 test_books_create_accepts_valid (tests.test_xss.EndpointsTest) ... ok
 test_books_create_rejects_xss (tests.test_xss.EndpointsTest) ... ok
-test_books_edit_rejects_xss (tests.test_xss.EndpointsTest) ... /app/project/books/views.py:59: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
-  book = Book.query.get(book_id)
-ok
+test_books_edit_rejects_xss (tests.test_xss.EndpointsTest) ... /app/project/books/views.py:59: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9) book = Book.query.get(book_id) ok
 test_customers_create_accepts_valid (tests.test_xss.EndpointsTest) ... ok
 test_customers_create_rejects_xss (tests.test_xss.EndpointsTest) ... ok
-test_customers_edit_rejects_xss (tests.test_xss.EndpointsTest) ... /app/project/customers/views.py:81: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
-  customer = Customer.query.get(customer_id)
-ok
+test_customers_edit_rejects_xss (tests.test_xss.EndpointsTest) ... /app/project/customers/views.py:81: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9) customer = Customer.query.get(customer_id) ok
 test_loans_create_accepts_valid (tests.test_xss.EndpointsTest) ... ok
 test_loans_create_rejects_xss (tests.test_xss.EndpointsTest) ... ok
 test_create_with_xss_raises (tests.test_xss.LoanModelTest) ... ok
